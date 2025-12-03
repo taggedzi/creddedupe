@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import sys
 
 """
@@ -37,6 +38,7 @@ def main() -> int:
     ]
     icon_path = next((p for p in icon_candidates if p.is_file()), None)
     script_path = project_root / "run_creddedupe_gui.py"
+    pyproject_path = project_root / "pyproject.toml"
 
     if icon_path is None:
         print(
@@ -49,6 +51,7 @@ def main() -> int:
     else:
         icon_arg = ["--icon", str(icon_path)]
 
+    # Basic PyInstaller arguments.
     args = [
         "--noconfirm",
         "--clean",
@@ -58,6 +61,25 @@ def main() -> int:
         *icon_arg,
         str(script_path),
     ]
+
+    # Ensure pyproject.toml and the GUI icon are bundled as data files so
+    # the frozen application can still discover its version and set a
+    # window icon at runtime.
+    data_args = []
+    if pyproject_path.is_file():
+        data_args += [
+            "--add-data",
+            f"{pyproject_path}{os.pathsep}.",
+        ]
+    if icon_path is not None:
+        # Place the icon where cred_dedupe.gui expects it:
+        # <resource_root>/cred_dedupe/assets/creddedupe.ico
+        data_args += [
+            "--add-data",
+            f"{icon_path}{os.pathsep}cred_dedupe{os.path.sep}assets",
+        ]
+
+    args = [*data_args, *args]
 
     pyinstaller_run(args)
     return 0

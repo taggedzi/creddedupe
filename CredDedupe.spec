@@ -5,7 +5,7 @@ a = Analysis(
     ['E:\\Home\\Documents\\Programming\\proton-dedupe\\run_creddedupe_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('E:\\Home\\Documents\\Programming\\proton-dedupe\\pyproject.toml', '.'), ('E:\\Home\\Documents\\Programming\\proton-dedupe\\src\\cred_dedupe\\assets\\creddedupe.ico', 'cred_dedupe\\assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['E:\\Home\\Documents\\Programming\\proton-dedupe\\src\\cred_dedupe\\assets\\creddedupe.ico'],
 )
 coll = COLLECT(
     exe,

@@ -242,9 +242,23 @@ def main() -> None:
 
     # Try to set a custom window icon if the .ico file is present.
     pkg_dir = Path(__file__).resolve().parent
-    icon_path = pkg_dir / "assets" / "creddedupe.ico"
-    if icon_path.is_file():
-        app.setWindowIcon(QtGui.QIcon(str(icon_path)))
+    icon_candidates = [
+        pkg_dir / "assets" / "creddedupe.ico",
+    ]
+
+    # In a frozen (PyInstaller) build, data files are unpacked under
+    # sys._MEIPASS; we arrange the icon to live at
+    # <_MEIPASS>/cred_dedupe/assets/creddedupe.ico.
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass is not None:  # pragma: no cover - frozen-only path
+        icon_candidates.append(
+            Path(meipass) / "cred_dedupe" / "assets" / "creddedupe.ico"
+        )
+
+    for icon_path in icon_candidates:
+        if icon_path.is_file():
+            app.setWindowIcon(QtGui.QIcon(str(icon_path)))
+            break
 
     window = MainWindow()
     window.show()
