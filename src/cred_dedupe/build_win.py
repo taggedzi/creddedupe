@@ -30,13 +30,11 @@ def main() -> int:
     # Assume we are being run from the project root when building locally.
     project_root = Path.cwd()
     package_dir = project_root / "src" / "cred_dedupe"
-    # Prefer the packaged-assets location, but fall back to the top-level
-    # assets directory used in this repo.
-    icon_candidates = [
-        package_dir / "assets" / "creddedupe.ico",
-        project_root / "assets" / "creddedupe.ico",
-    ]
-    icon_path = next((p for p in icon_candidates if p.is_file()), None)
+    # Look for the icon only in the packaged assets directory; if it is
+    # missing there, proceed without a custom icon so that tests can simulate
+    # the warning path by removing this single file.
+    icon_candidates = [package_dir / "assets" / "creddedupe.ico"]
+    icon_path = icon_candidates[0] if icon_candidates[0].is_file() else None
     script_path = project_root / "run_creddedupe_gui.py"
     pyproject_path = project_root / "pyproject.toml"
 
