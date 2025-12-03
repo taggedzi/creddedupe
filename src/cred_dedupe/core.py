@@ -4,10 +4,10 @@ import argparse
 import csv
 import dataclasses
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from urllib.parse import urlparse
-from datetime import datetime
 
 
 CSV_INPUT_COLUMNS = [
@@ -337,16 +337,21 @@ def dedupe_csv_file(
     output_path: Path,
     cfg: Optional[DedupeConfig] = None,
 ) -> DedupeStats:
-    """
-    Read a Credential CSV file, deduplicate entries, and write the result.
-    """
+    """Read a Proton Pass CSV file, deduplicate entries, and write the result."""
+    from .model import VaultItem
+    from .protonpass import (
+        dedupe_proton_vault_items,
+        proton_row_to_vault_item,
+        vault_item_to_proton_row,
+    )
+
     if cfg is None:
         cfg = DedupeConfig()
 
     input_path = input_path.expanduser().resolve()
     output_path = output_path.expanduser().resolve()
 
-    entries: List[Entry] = []
+    items: List[VaultItem] = []
 
     with input_path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
@@ -357,15 +362,15 @@ def dedupe_csv_file(
             )
 
         for row in reader:
-            entries.append(_entry_from_row(row, cfg))
+            items.append(proton_row_to_vault_item(row))
 
-    deduped_entries, stats = dedupe_entries(entries, cfg)
+    deduped_items, stats = dedupe_proton_vault_items(items, cfg)
 
     with output_path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_OUTPUT_COLUMNS)
         writer.writeheader()
-        for entry in deduped_entries:
-            writer.writerow(_entry_to_row(entry))
+        for item in deduped_items:
+            writer.writerow(vault_item_to_proton_row(item))
 
     return stats
 
