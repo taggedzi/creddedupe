@@ -1,9 +1,10 @@
 # CredDedupe
 
-Small helper tool to clean up Proton Pass CSV exports by merging duplicate
-entries while trying to preserve as much information as possible.
+Credential deduplication tool with a simple Qt6 GUI for cleaning 
+password-manager CSV exports. by merging duplicate entries while 
+trying to preserve as much information as possible.
 
-The input is a Proton Pass CSV with the following columns:
+The input is a CSV with the following columns:
 
 `type,name,url,email,username,password,note,totp,createTime,modifyTime,vault`
 
@@ -16,14 +17,6 @@ The output is a CSV that keeps only the columns required for re‑import:
 > This tool operates on password manager exports. Always work on copies of your
 > data, never the only original. Review results carefully before importing them
 > anywhere.
-
-> ⚠️ **No affiliation with Proton**
->
-> This project and its author are **not affiliated with, endorsed by, or
-> sponsored by Proton AG, Proton Pass, or any related company or product**.
-> The name “CredDedupe” and references to “Proton Pass” are used only to
-> describe that the tool operates on CSV exports produced by the Proton Pass
-> application.
 
 > ⚠️ **AI‑assisted project**
 >
@@ -142,7 +135,7 @@ manually before importing it anywhere.
 
 ### Input and parsing
 
-- Expects all of the Proton Pass columns:  
+- Expects all of the columns:  
   `type,name,url,email,username,password,note,totp,createTime,modifyTime,vault`.
 - Internally, each row is converted into an `Entry` object that also stores:
   - `canonical_domain`: derived from `url` using standard URL parsing, with
@@ -218,12 +211,12 @@ The output CSV contains only:
 name,url,email,username,password,note,totp,vault
 ```
 
-This format is typically suitable for re‑import into Proton Pass or other
-password managers that accept CSV imports with these columns.
+This format is typically suitable for re‑import into a password managers 
+that accept CSV imports with these columns.
 
 ## Safety tips
 
-- Always make a backup of your original Proton Pass export before running this
+- Always make a backup of your original credential export before running this
   tool.
 - Prefer running in the default (strict password) mode first and review the
   results.

@@ -106,9 +106,9 @@ def _normalize_domain(url: str) -> str:
 
 def _parse_timestamp(value: str) -> float:
     """
-    Try to interpret Proton timestamps in a reasonably robust way.
+    Try to interpret timestamps in a reasonably robust way.
 
-    Proton exports may use epoch seconds/milliseconds or ISO strings.
+    exports may use epoch seconds/milliseconds or ISO strings.
     We only need ordering, not exact times.
     """
     value = value.strip()
@@ -338,7 +338,7 @@ def dedupe_csv_file(
     cfg: Optional[DedupeConfig] = None,
 ) -> DedupeStats:
     """
-    Read a Proton Pass CSV file, deduplicate entries, and write the result.
+    Read a Credential CSV file, deduplicate entries, and write the result.
     """
     if cfg is None:
         cfg = DedupeConfig()
@@ -372,19 +372,16 @@ def dedupe_csv_file(
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Credential Deduplicator - designed for Proton Pass CSV exports with a simple Qt6 GUI",
+        description="Credential deduplication tool with a simple Qt6 GUI for cleaning password-manager CSV exports.",
         epilog=(
             "DISCLAIMER: This project and its author are not affiliated with, "
-            "endorsed by, or sponsored by Proton AG, Proton Pass, or any "
-            "related entity. The use of the name 'Proton' is purely "
-            "descriptive to indicate that this tool operates on CSV exports "
-            "produced by the Proton Pass application."
+            "endorsed by, or sponsored by any password application."
         ),
     )
     parser.add_argument(
         "input",
         type=str,
-        help="Input Proton Pass CSV file.",
+        help="Input credential CSV file.",
     )
     parser.add_argument(
         "-o",

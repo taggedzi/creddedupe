@@ -102,10 +102,8 @@ class MainWindow(QtWidgets.QMainWindow):
             f"Qt: {qt_version}\n\n"
             f"Project repository:\n{APP_REPO_URL}\n\n"
             "This project and its author are not affiliated with, "
-            "endorsed by, or sponsored by Proton AG, Proton Pass, or any "
-            "related entity. The use of the name 'Proton' is purely "
-            "descriptive to indicate that this tool operates on CSV "
-            "exports produced by the Proton Pass application.\n\n"
+            "endorsed by, or sponsored by any password or credential storage"
+            "application.\n\n"
             "This application uses Qt 6 (https://www.qt.io).\n"
             "Qt and the Qt logo are trademarks of The Qt Company Ltd\n"
             "and/or its subsidiaries. Qt is available under the terms\n"
@@ -138,7 +136,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _choose_input_file(self) -> None:
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            "Select Proton Pass CSV",
+            "Select Credential CSV",
             "",
             "CSV Files (*.csv);;All Files (*)",
         )
