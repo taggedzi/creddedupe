@@ -11,6 +11,7 @@ import sys
 from importlib.metadata import PackageNotFoundError, version as _dist_version
 
 from .core import dedupe_csv_file
+from .plugins.protonpass_plugin import register_protonpass_plugin
 
 
 def _find_pyproject() -> Path | None:
@@ -62,6 +63,11 @@ except PackageNotFoundError:
                 __version__ = "0+unknown"
     else:
         __version__ = "0+unknown"
+
+
+# Register built-in provider plugins at import time so that callers using the
+# high-level package API always have a populated registry.
+register_protonpass_plugin()
 
 
 __all__ = ["dedupe_csv_file", "__version__"]

@@ -337,9 +337,26 @@ def dedupe_csv_file(
     output_path: Path,
     cfg: Optional[DedupeConfig] = None,
 ) -> DedupeStats:
+<<<<<<< Updated upstream
     """
     Read a Credential CSV file, deduplicate entries, and write the result.
     """
+=======
+    """Read a Proton Pass CSV file, deduplicate entries, and write the result."""
+    from .model import VaultItem
+    from .plugins.protonpass_plugin import register_protonpass_plugin
+    from .plugins.provider_types import ProviderFormat
+    from .plugins.registry import get_registry
+    from .protonpass import dedupe_proton_vault_items
+
+    # Ensure the Proton Pass plugin is registered so we can resolve it from the
+    # registry even if callers import :mod:`cred_dedupe.core` directly.
+    register_protonpass_plugin()
+
+    registry = get_registry()
+    proton_plugin = registry.get(ProviderFormat.PROTONPASS)
+
+>>>>>>> Stashed changes
     if cfg is None:
         cfg = DedupeConfig()
 
@@ -357,15 +374,24 @@ def dedupe_csv_file(
             )
 
         for row in reader:
+<<<<<<< Updated upstream
             entries.append(_entry_from_row(row, cfg))
+=======
+            items.append(proton_plugin.import_row(row))
+>>>>>>> Stashed changes
 
     deduped_entries, stats = dedupe_entries(entries, cfg)
 
     with output_path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_OUTPUT_COLUMNS)
         writer.writeheader()
+<<<<<<< Updated upstream
         for entry in deduped_entries:
             writer.writerow(_entry_to_row(entry))
+=======
+        for item in deduped_items:
+            writer.writerow(proton_plugin.export_row(item))
+>>>>>>> Stashed changes
 
     return stats
 
