@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Proton Pass CSV <-> VaultItem adapter layer.
 
 This module is responsible for translating between Proton Pass CSV rows and the
@@ -27,8 +29,6 @@ stored in :attr:`VaultItem.extra` using Proton-prefixed keys so that they can
 be preserved across round-trips even if they are not directly used for
 deduplication.
 """
-
-from __future__ import annotations
 
 from typing import Dict, Iterable, List, Optional, Tuple
 
