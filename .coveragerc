@@ -1,0 +1,3 @@
+[run]
+omit =
+    src/cred_dedupe/gui.py
