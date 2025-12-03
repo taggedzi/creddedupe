@@ -12,6 +12,8 @@ The output is a CSV that keeps only the columns required for re‑import:
 
 `name,url,email,username,password,note,totp,vault`
 
+## Warnings and Notices
+
 > ⚠️ **Warning – passwords and sensitive data**
 >
 > This tool operates on password manager exports. Always work on copies of your
