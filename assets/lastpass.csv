@@ -1,0 +1,4 @@
+url,username,password,totp,extra,name,grouping,fav
+https://example.com/login,user@example.com,lp-pass-1,LPSEED123,Extra notes for LastPass entry,Example LastPass Login,Personal,1
+http://sn,note-user,lp-note-pass,,Secure note body,Example LastPass Secure Note,Notes,0
+

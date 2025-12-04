@@ -1,0 +1,4 @@
+type,name,url,email,username,password,note,totp,createTime,modifyTime,vault
+login,Example Proton Login,https://example.com/login,user@example.com,user,secret-note-1,Some note text,otpauth://totp/Example?secret=ABC,1710000000,1710000100,Default
+login,Example Proton Login Duplicate,https://example.com/login,user@example.com,user,secret-note-1,Some note text,otpauth://totp/Example?secret=ABC,1710000000,1710000100,Default
+
