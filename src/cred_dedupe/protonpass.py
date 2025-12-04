@@ -56,6 +56,27 @@ def _map_proton_type(raw_type: str) -> ItemType:
     return _PROTON_TYPE_TO_ITEM_TYPE.get(key, ItemType.OTHER)
 
 
+def _parse_proton_timestamp_to_ms(raw: str) -> Optional[int]:
+    """Parse Proton CSV timestamp into epoch milliseconds.
+
+    Heuristic:
+      - If value is large (> 10**12), treat as milliseconds.
+      - Otherwise treat as seconds and multiply by 1000.
+    """
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    try:
+        value = int(raw)
+    except ValueError:
+        return None
+    if value <= 0:
+        return None
+    if value > 10**12:
+        return value
+    return value * 1000
+
+
 def proton_row_to_vault_item(row: Dict[str, str]) -> VaultItem:
     """Map a single Proton Pass CSV row to a :class:`VaultItem`."""
     type_raw = row.get("type", "") or ""
@@ -69,6 +90,9 @@ def proton_row_to_vault_item(row: Dict[str, str]) -> VaultItem:
     create_time = row.get("createTime", "") or ""
     modify_time = row.get("modifyTime", "") or ""
     vault = row.get("vault", "") or ""
+
+    created_at = _parse_proton_timestamp_to_ms(create_time)
+    updated_at = _parse_proton_timestamp_to_ms(modify_time)
 
     primary_url = normalize_url(url) if url else None
 
@@ -99,6 +123,8 @@ def proton_row_to_vault_item(row: Dict[str, str]) -> VaultItem:
         password=password,
         primary_url=primary_url,
         notes=note,
+        created_at=created_at,
+        updated_at=updated_at,
         totp_uri=totp_uri,
         totp_secret=totp_secret,
         extra=extra,
@@ -149,15 +175,21 @@ def _entry_to_vault_item(entry: Entry) -> VaultItem:
         totp_uri = None
         totp_secret = totp_raw or None
 
+    create_time = entry.createTime or ""
+    modify_time = entry.modifyTime or ""
+
     extra = {
         "proton_type": type_raw,
         "proton_email": entry.email or "",
-        "proton_createTime": entry.createTime or "",
-        "proton_modifyTime": entry.modifyTime or "",
+        "proton_createTime": create_time,
+        "proton_modifyTime": modify_time,
         "proton_vault": entry.vault or "",
         "proton_raw_url": url,
         "proton_totp": totp_raw,
     }
+
+    created_at = _parse_proton_timestamp_to_ms(create_time)
+    updated_at = _parse_proton_timestamp_to_ms(modify_time)
 
     return VaultItem(
         item_type=item_type,
@@ -167,6 +199,8 @@ def _entry_to_vault_item(entry: Entry) -> VaultItem:
         password=entry.password or "",
         primary_url=primary_url,
         notes=entry.note or "",
+        created_at=created_at,
+        updated_at=updated_at,
         totp_uri=totp_uri,
         totp_secret=totp_secret,
         extra=extra,

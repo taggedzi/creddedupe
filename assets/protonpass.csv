@@ -1,4 +1,8 @@
 type,name,url,email,username,password,note,totp,createTime,modifyTime,vault
 login,Example Proton Login,https://example.com/login,user@example.com,user,secret-note-1,Some note text,otpauth://totp/Example?secret=ABC,1710000000,1710000100,Default
 login,Example Proton Login Duplicate,https://example.com/login,user@example.com,user,secret-note-1,Some note text,otpauth://totp/Example?secret=ABC,1710000000,1710000100,Default
-
+login,Example Proton Login,https://example.com/login,user@example.com,user,secret-note-1,Some note text,otpauth://totp/Example?secret=ABC,1710000000,1710000100,Default
+login,Example Proton Login Updated,https://example.com/login,user@example.com,user,secret-note-2,Updated note text,otpauth://totp/Example?secret=ABC,1710000000,1715000000,Default
+login,Example Bank Login,https://bank.example.com/,bank-user@example.com,bank-user,bank-pass-1,"Bank account login",,1700000000,1701000000,Finance
+login,Example Proton Login Work,https://example.com/login,work@example.com,work-user,secret-work-1,"Work-only login",,1711000000,1712000000,Work
+note,Example Secure Note,,,,"","This is a secure note stored in Proton Pass",,1690000000,1690000500,Secure Notes
