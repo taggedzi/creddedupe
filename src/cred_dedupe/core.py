@@ -475,12 +475,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if getattr(args, "provider", None):
         provider_override = ProviderFormat(args.provider)
     else:
-        # Ensure plugins are registered and run detection.
-        from .plugins.protonpass_plugin import register_protonpass_plugin
+        from .plugins import register_all_plugins
         from .plugins.registry import get_registry
         from .detection import detect_provider_for_file
 
-        register_protonpass_plugin()
+        # Register all plugins once, then run detection so the CLI can give
+        # the user a hint about which provider format was detected.
+        register_all_plugins()
         registry = get_registry()
 
         detection = detect_provider_for_file(input_path, registry)

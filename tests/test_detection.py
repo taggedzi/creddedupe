@@ -50,7 +50,7 @@ def test_detect_provider_unknown_headers() -> None:
 class _DummyLastPassPlugin(BaseProviderPlugin):
     provider_type = ProviderFormat.LASTPASS
     header_spec = HeaderSpec(
-        required={"dummy_name", "dummy_url"},
+        required={"dummy name", "dummy_url"},
         optional={"dummy_extra"},
     )
 
@@ -62,20 +62,23 @@ class _DummyLastPassPlugin(BaseProviderPlugin):
 
 
 def test_detection_prefers_higher_scoring_plugin_when_multiple() -> None:
-    register_protonpass_plugin()
     registry = get_registry()
-
-    # Register a dummy plugin with headers that will match our test CSV better
-    # than the ProtonPass plugin.
+    # Preserve existing registry state so this test does not interfere with
+    # other plugin registration tests.
+    original_plugins = dict(registry._plugins)  # type: ignore[attr-defined]
     try:
+        registry._plugins.clear()  # type: ignore[attr-defined]
+        register_protonpass_plugin()
+
+        # Register a dummy plugin with headers that will match our test CSV
+        # better than the ProtonPass plugin.
         registry.register(_DummyLastPassPlugin())
-    except ValueError:
-        # Plugin may already be registered from a previous test run.
-        pass
 
-    headers = ["Dummy Name", "dummy_url", "DUMMY_EXTRA"]
-    result = detect_provider(headers, registry)
+        headers = ["Dummy Name", "dummy_url", "DUMMY_EXTRA"]
+        result = detect_provider(headers, registry)
 
-    assert result.provider is ProviderFormat.LASTPASS
-    assert any(m.provider is ProviderFormat.LASTPASS for m in result.matches)
+        assert result.provider is ProviderFormat.LASTPASS
+        assert any(m.provider is ProviderFormat.LASTPASS for m in result.matches)
+    finally:
+        registry._plugins = original_plugins  # type: ignore[attr-defined]
 
