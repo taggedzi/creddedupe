@@ -1,4 +1,7 @@
 folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp
 Personal,1,login,Example Bitwarden Login,"Bitwarden notes",,0,https://example.com/login,user@example.com,bw-pass-1,BWSEED123
+Personal,1,login,Example Bitwarden Login,"Bitwarden notes",,0,https://example.com/login,user@example.com,bw-pass-1,BWSEED123
+Personal,0,login,Example Bitwarden Login,"Updated from mobile",,0,https://example.com/login,user@example.com,bw-pass-2,BWSEED123
+Shared,0,login,Example Bitwarden Forum,"Forum account",,0,https://forum.example.com/,forum-user@example.com,forum-pass-1,
+Personal,0,login,Example Bitwarden Work,"Work-only login",,0,https://example.com/login,work@example.com,bw-work-1,
 Secure,0,note,Example Bitwarden Secure Note,"This is a secure note",,,,
-
