@@ -1,0 +1,4 @@
+Type,Name,Website URL,Username,Email,Secondary Login,Password,Comment,collections
+Login,Example Dashlane Login,https://example.com/login,user@example.com,,alt-user,dash-pass-1,"Dashlane comment",Personal
+Login,Example Dashlane Login 2,https://example.org/,,"other@example.org",,dash-pass-2,Second entry,
+

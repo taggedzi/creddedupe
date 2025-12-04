@@ -11,6 +11,27 @@ from urllib.parse import urlparse
 
 from .plugins.provider_types import ProviderFormat
 
+SECURITY_WARNING = """
+[WARNING] This tool operates on CSV files that contain plaintext credentials.
+
+- Do NOT store these files unencrypted.
+- Avoid sending them over email or chat.
+- Delete temporary and intermediate files when finished.
+- Consult your security team or administrator if in doubt.
+
+You are responsible for safe handling of exported password data.
+"""
+
+_SECURITY_WARNING_PRINTED = False
+
+
+def print_security_warning_once() -> None:
+    global _SECURITY_WARNING_PRINTED
+    if _SECURITY_WARNING_PRINTED:
+        return
+    _SECURITY_WARNING_PRINTED = True
+    print(SECURITY_WARNING.strip())
+
 
 CSV_INPUT_COLUMNS = [
     "type",
@@ -454,6 +475,8 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
+
+    print_security_warning_once()
 
     input_path = Path(args.input)
     if not input_path.is_file():

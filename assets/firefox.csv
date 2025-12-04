@@ -1,0 +1,3 @@
+url,username,password,httpRealm,formActionOrigin,guid,timeCreated,timeLastUsed,timePasswordChanged
+https://example.com/login,user@example.com,ff-pass-1,,"https://example.com/login","abcd-1234",1710000000000,1710000100000,1710000200000
+

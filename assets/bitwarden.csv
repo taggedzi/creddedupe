@@ -1,0 +1,4 @@
+folder,favorite,type,name,notes,fields,reprompt,login_uri,login_username,login_password,login_totp
+Personal,1,login,Example Bitwarden Login,"Bitwarden notes",,0,https://example.com/login,user@example.com,bw-pass-1,BWSEED123
+Secure,0,note,Example Bitwarden Secure Note,"This is a secure note",,,,
+

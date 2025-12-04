@@ -1,0 +1,3 @@
+Name,URL,MatchUrl,Login,Password,Note,Folder,RfFieldsV2
+Example RoboForm Login,https://example.com/login,https://example.com/login,user@example.com,rf-pass-1,"RoboForm note",Personal,"field-metadata"
+
