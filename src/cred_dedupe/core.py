@@ -339,12 +339,17 @@ def dedupe_csv_file(
 ) -> DedupeStats:
     """Read a Proton Pass CSV file, deduplicate entries, and write the result."""
     from .model import VaultItem
-    from .protonpass import (
-        dedupe_proton_vault_items,
-        proton_row_to_vault_item,
-        vault_item_to_proton_row,
-    )
+    from .plugins.protonpass_plugin import register_protonpass_plugin
+    from .plugins.provider_types import ProviderFormat
+    from .plugins.registry import get_registry
+    from .protonpass import dedupe_proton_vault_items
 
+    # Ensure the Proton Pass plugin is registered so we can resolve it from the
+    # registry even if callers import :mod:`cred_dedupe.core` directly.
+    register_protonpass_plugin()
+
+    registry = get_registry()
+    proton_plugin = registry.get(ProviderFormat.PROTONPASS)
     if cfg is None:
         cfg = DedupeConfig()
 
@@ -362,7 +367,7 @@ def dedupe_csv_file(
             )
 
         for row in reader:
-            items.append(proton_row_to_vault_item(row))
+            items.append(proton_plugin.import_row(row))
 
     deduped_items, stats = dedupe_proton_vault_items(items, cfg)
 
@@ -370,7 +375,7 @@ def dedupe_csv_file(
         writer = csv.DictWriter(f, fieldnames=CSV_OUTPUT_COLUMNS)
         writer.writeheader()
         for item in deduped_items:
-            writer.writerow(vault_item_to_proton_row(item))
+            writer.writerow(proton_plugin.export_row(item))
 
     return stats
 

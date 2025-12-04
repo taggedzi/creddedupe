@@ -229,4 +229,3 @@ __all__ = [
     "vault_item_to_proton_row",
     "dedupe_proton_vault_items",
 ]
-
