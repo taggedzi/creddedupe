@@ -1,34 +1,33 @@
 from __future__ import annotations
 
-"""Proton Pass CSV <-> VaultItem adapter layer.
-
-This module is responsible for translating between Proton Pass CSV rows and the
-canonical :class:`VaultItem` model used internally for deduplication.
-
-Current Proton Pass CSV columns expected on import:
-
-- ``type``: item type string (e.g. ``"login"``).
-- ``name``: item name.
-- ``url``: login URL.
-- ``email``: email address field (treated as an alternative username).
-- ``username``: primary username.
-- ``password``: password.
-- ``note``: free-form notes.
-- ``totp``: TOTP secret or otpauth:// URI.
-- ``createTime``: creation timestamp (provider-specific format).
-- ``modifyTime``: modification timestamp (provider-specific format).
-- ``vault``: vault/container name.
-
-When exporting to Proton Pass CSV we currently emit the following columns
-(matching ``CSV_OUTPUT_COLUMNS`` in :mod:`cred_dedupe.core`):
-
-- ``name``, ``url``, ``email``, ``username``, ``password``, ``note``, ``totp``, ``vault``.
-
-Provider-specific details such as the original timestamps or item type are
-stored in :attr:`VaultItem.extra` using Proton-prefixed keys so that they can
-be preserved across round-trips even if they are not directly used for
-deduplication.
-"""
+# Proton Pass CSV <-> VaultItem adapter layer.
+#
+# This module is responsible for translating between Proton Pass CSV rows and
+# the canonical :class:`VaultItem` model used internally for deduplication.
+#
+# Current Proton Pass CSV columns expected on import:
+#
+# - ``type``: item type string (e.g. ``"login"``).
+# - ``name``: item name.
+# - ``url``: login URL.
+# - ``email``: email address field (treated as an alternative username).
+# - ``username``: primary username.
+# - ``password``: password.
+# - ``note``: free-form notes.
+# - ``totp``: TOTP secret or otpauth:// URI.
+# - ``createTime``: creation timestamp (provider-specific format).
+# - ``modifyTime``: modification timestamp (provider-specific format).
+# - ``vault``: vault/container name.
+#
+# When exporting to Proton Pass CSV we currently emit the following columns
+# (matching ``CSV_OUTPUT_COLUMNS`` in :mod:`cred_dedupe.core`):
+#
+# - ``name``, ``url``, ``email``, ``username``, ``password``, ``note``, ``totp``, ``vault``.
+#
+# Provider-specific details such as the original timestamps or item type are
+# stored in :attr:`VaultItem.extra` using Proton-prefixed keys so that they can
+# be preserved across round-trips even if they are not directly used for
+# deduplication.
 
 from typing import Dict, Iterable, List, Optional, Tuple
 
