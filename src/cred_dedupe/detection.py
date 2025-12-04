@@ -58,8 +58,17 @@ def score_headers_for_plugin(
 
     required_ratio = matched_required / total_required if total_required else 0.0
     optional_ratio = matched_optional / total_optional if total_optional else 0.0
+    coverage_ratio = (
+        matched_required / len(normalized_headers) if normalized_headers else 0.0
+    )
 
-    score = required_ratio + 0.25 * optional_ratio
+    # Score favors plugins that:
+    # - Match all of their required headers (required_ratio close to 1.0).
+    # - Have required headers that cover most of the actual CSV header set
+    #   (coverage_ratio close to 1.0).
+    # Optional headers provide a small bonus but should not allow a plugin
+    # with only a subset of required headers to outrank a more specific one.
+    score = required_ratio * coverage_ratio + 0.1 * optional_ratio
 
     return DetectionMatchDetails(
         provider=plugin.provider_type,
