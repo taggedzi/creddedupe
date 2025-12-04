@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from urllib.parse import urlparse
 
+from .plugins.provider_types import ProviderFormat
+
 
 CSV_INPUT_COLUMNS = [
     "type",
@@ -336,11 +338,17 @@ def dedupe_csv_file(
     input_path: Path,
     output_path: Path,
     cfg: Optional[DedupeConfig] = None,
+    provider_override: ProviderFormat | None = None,
 ) -> DedupeStats:
-    """Read a Proton Pass CSV file, deduplicate entries, and write the result."""
+    """Read a credential CSV file, deduplicate entries, and write the result.
+
+    Currently this is optimized for Proton Pass CSV exports, but it uses the
+    provider plugin registry and detection helpers so that additional providers
+    can be supported in future phases.
+    """
+    from .detection import detect_provider_for_file
     from .model import VaultItem
     from .plugins.protonpass_plugin import register_protonpass_plugin
-    from .plugins.provider_types import ProviderFormat
     from .plugins.registry import get_registry
     from .protonpass import dedupe_proton_vault_items
 
@@ -349,6 +357,20 @@ def dedupe_csv_file(
     register_protonpass_plugin()
 
     registry = get_registry()
+
+    if provider_override is not None:
+        provider = provider_override
+    else:
+        detection = detect_provider_for_file(input_path, registry)
+        provider = detection.provider
+
+    if provider is not ProviderFormat.PROTONPASS:
+        # For now we only support Proton Pass as an input provider.
+        raise ValueError(
+            "Unable to detect a supported CSV provider format for this file. "
+            "Currently only Proton Pass CSV exports are supported."
+        )
+
     proton_plugin = registry.get(ProviderFormat.PROTONPASS)
     if cfg is None:
         cfg = DedupeConfig()
@@ -360,7 +382,7 @@ def dedupe_csv_file(
 
     with input_path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
-        missing_cols = [c for c in CSV_INPUT_COLUMNS if c not in reader.fieldnames]
+        missing_cols = [c for c in CSV_INPUT_COLUMNS if c not in (reader.fieldnames or [])]
         if missing_cols:
             raise ValueError(
                 f"Input CSV is missing columns: {', '.join(missing_cols)}"
@@ -417,6 +439,15 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "By default they are treated as interchangeable."
         ),
     )
+    parser.add_argument(
+        "--provider",
+        type=str,
+        choices=[p.value for p in ProviderFormat if p is not ProviderFormat.UNKNOWN],
+        help=(
+            "Explicitly specify the CSV provider format, overriding "
+            "automatic detection (currently only 'protonpass' is supported)."
+        ),
+    )
     return parser
 
 
@@ -440,7 +471,32 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         treat_email_username_equivalent=not args.no_email_username_equivalence,
     )
 
-    stats = dedupe_csv_file(input_path, output_path, cfg)
+    provider_override = None
+    if getattr(args, "provider", None):
+        provider_override = ProviderFormat(args.provider)
+    else:
+        # Ensure plugins are registered and run detection.
+        from .plugins.protonpass_plugin import register_protonpass_plugin
+        from .plugins.registry import get_registry
+        from .detection import detect_provider_for_file
+
+        register_protonpass_plugin()
+        registry = get_registry()
+
+        detection = detect_provider_for_file(input_path, registry)
+        provider_override = detection.provider
+        if detection.provider is not ProviderFormat.UNKNOWN:
+            print(
+                f"Detected provider: {detection.provider.value} "
+                f"(confidence={detection.confidence:.2f})"
+            )
+        else:
+            print(
+                "Warning: Unable to detect CSV provider format automatically; "
+                "you may need to specify --provider explicitly."
+            )
+
+    stats = dedupe_csv_file(input_path, output_path, cfg, provider_override)
 
     print(
         f"Processed {stats.input_count} rows -> {stats.output_count} rows "
