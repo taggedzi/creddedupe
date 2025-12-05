@@ -7,6 +7,8 @@ env/
 venv/
 .venv/
 build/
+!build/creddedupe_gui.spec
+!build/build_gui_windows.ps1
 dist/
 *.egg-info/
 *.log
@@ -15,4 +17,3 @@ dist/
 .nox
 .pytest_cache
 .ruff_cache
-
