@@ -59,6 +59,11 @@ class VaultItem:
     # Catch-all for provider-specific data
     extra: Dict[str, str] = field(default_factory=dict)
 
+    def __hash__(self) -> int:
+        # Use object identity for hashing so VaultItem instances can be placed
+        # in sets or used as dict keys without relying on mutable field values.
+        return id(self)
+
 
 __all__ = ["ItemType", "VaultItem"]
 
