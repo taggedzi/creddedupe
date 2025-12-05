@@ -57,8 +57,6 @@ def find_source_files(
 ) -> Iterable[Path]:
     root = root.resolve()
     for dirpath, dirnames, filenames in os.walk(root):
-        rel_dir = Path(dirpath).relative_to(root)
-
         # Skip unwanted directories
         dirnames[:] = [
             d for d in dirnames
