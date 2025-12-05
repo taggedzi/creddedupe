@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 from __future__ import annotations
 
 from cred_dedupe.cli_merge import _compute_password_matches

@@ -1,307 +1,334 @@
-# CredDedupe
+# **CredDedupe**
 
-Credential deduplication tool with a simple Qt6 GUI for cleaning 
-password-manager CSV exports. by merging duplicate entries while 
-trying to preserve as much information as possible.
+![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
+![Status](https://img.shields.io/badge/Status-Alpha-orange)
+<!-- ![Build](https://img.shields.io/github/actions/workflow/status/taggedzi/creddedupe/tests.yml?label=Tests) -->
+![Issues](https://img.shields.io/github/issues/taggedzi/creddedupe)
+![Last Commit](https://img.shields.io/github/last-commit/taggedzi/creddedupe)
+![Downloads](https://img.shields.io/github/downloads/taggedzi/creddedupe/total)
 
-The input is a CSV with the following columns:
+*A multi-provider credential deduplication and cleanup tool with CLI and Qt6 GUI interfaces.*
 
-`type,name,url,email,username,password,note,totp,createTime,modifyTime,vault`
+---
 
-The output is a CSV that keeps only the columns required for re‑import:
+## 📌 Overview
 
-`name,url,email,username,password,note,totp,vault`
+Password managers and browsers often export CSV files containing:
 
-## Warnings and Notices
+* Duplicate entries (sometimes from repeated imports)
+* Slight variations of the same credential
+* Provider-specific field formats
+* Missing or inconsistent metadata
 
-> ⚠️ **Warning – passwords and sensitive data**
->
-> This tool operates on password manager exports. Always work on copies of your
-> data, never the only original. Review results carefully before importing them
-> anywhere.
+**CredDedupe** solves these problems by:
 
-> ⚠️ **AI‑assisted project**
->
-> Significant parts of this project were generated with the help of an AI
-> assistant. The logic has not been audited by security professionals. Use at
-> your own risk.
+* Importing CSV exports from multiple providers
+* Normalizing entries into a canonical schema
+* Automatically detecting exact duplicates
+* Grouping **near-duplicates** for human review
+* Allowing you to choose how duplicates are resolved
+* Re-exporting a clean CSV compatible with the provider you choose
+* Offering both:
 
-## License and responsibility
+  * **CLI:** `creddedupe-cli`
+  * **Qt6 GUI:** `creddedupe-gui`
 
-This project is released under the [MIT License](LICENSE).
+Ideal for users who are:
 
-The MIT License explicitly provides the software **“as is”**, without any
-express or implied warranties, and limits the liability of the authors and
-copyright holders. By using this project, you agree that:
+* Switching password managers
+* Merging multiple devices or accounts
+* Cleaning years of accumulated entries
+* Translating between CSV formats
 
-- You are solely responsible for backing up your data.
-- You are solely responsible for verifying that the output is correct.
-- The authors, contributors, and maintainers are **not responsible** for any
-  data loss, corruption, incorrect deduplication, security issues, or other
-  problems arising from use or misuse of this tool.
+---
 
-## Installation
+## 🚫 What CredDedupe Does *NOT* Do
 
-These instructions assume you already have Python 3.9+ installed.
+To avoid misunderstandings:
 
-### 1. Clone the repository
+* ❌ Does **not** upload or transmit credentials
+* ❌ Does **not** encrypt CSV files (CSV is plaintext by definition)
+* ❌ Does **not** replace your password manager
+* ❌ Does **not** modify existing password vaults
+* ❌ Does **not** guarantee compatibility with every provider (experimental software)
 
-```bash
-git clone https://github.com/taggedzi/creddedupe.git
+All processing happens **locally** and **only** on exported CSV files.
+
+---
+
+## ⚠️ Security Notice
+
+> **CSV exports contain plaintext passwords, TOTP secrets, and sensitive metadata. Treat them as highly confidential.**
+
+CredDedupe processes all data locally and never uploads or transmits your credentials.
+
+By using CredDedupe, you accept responsibility for:
+
+* Secure handling and deletion of CSV files
+* Protecting your system environment
+* Validating output before re-importing into any password manager
+
+CredDedupe and its author(s) assume **no liability** for data loss, exposure, incorrect merges, corrupted files, or any resulting harm.
+
+> CredDedupe is **not affiliated with any password manager**, including Proton Pass, Bitwarden, LastPass, Dashlane, Apple, Mozilla, Google, Microsoft, NordPass, RoboForm, or others.
+
+---
+
+## ✨ Features
+
+### ✔ Multi-provider CSV import
+
+Supports (where formats are documented):
+
+* Proton Pass
+* LastPass
+* Bitwarden
+* Dashlane
+* RoboForm
+* NordPass
+* Apple Passwords
+* Kaspersky
+* Firefox
+* Chromium-based browsers (Chrome, Edge, Brave, Opera)
+
+CredDedupe is an independent open-source project. It is not affiliated with, endorsed by, or sponsored by any password manager or browser vendor, including but not limited to: Proton Pass, Bitwarden, LastPass, Dashlane, NordPass, 1Password, RoboForm, Apple Passwords, Firefox, Chrome/Chromium-based browsers, Microsoft Edge, or Opera.
+
+All trademarks, product names, and brand names are the property of their respective owners.
+
+### ✔ Unified canonical schema
+
+Normalized fields:
+
+* Title
+* Username
+* Password (masked)
+* Primary URL
+* Notes
+* Folder / Tags
+* TOTP
+* Timestamps
+
+### ✔ Automatic provider detection
+
+Based on header fingerprints.
+
+### ✔ Dedupe engine
+
+* Removes exact duplicates automatically
+* Groups near-duplicates by username + normalized URL
+* Highlights differences (timestamps, notes, folder, etc.)
+* All sensitive fields masked
+
+### ✔ Interactive decision tools
+
+**CLI & GUI options**:
+
+* Keep one
+* Keep newest/best
+* Keep all
+* Skip group
+
+### ✔ Safe output formats
+
+Re-export to any supported provider schema.
+
+### ✔ Experimental Windows GUI builds
+
+Portable, no installation required.
+
+#### 🖼️ Screenshots
+
+After selecting a CSV to de-duplicate, it auto guesses at the provider, but can still be manually overriden
+
+![CSV Selected - Provider Selection](/docs/images/CredDedupe-GUI-Select-Provider.png)
+
+It Automatically removes entries that are EXACT duplicates, and then presents GROUPS of entires that are ALMOST identical.
+To move forward select each of the groups and direct the application as to what actions to take.
+
+![Near Match Entry](/docs/images/CredDedupe-GUI-Show-NearMatch.png)
+
+Here are the actions you can take, and it will give you as much information as possible without exposing passwords.
+
+![Near Match Selection Process](/docs/images/CredDedupe-GUI-Output-Options.png)
+
+---
+
+## 🧱 Requirements
+
+### For CLI/GUI from source
+
+* Python **3.10+**
+* Dependencies installed automatically:
+
+  * PyQt6
+  * PyInstaller (only for building binaries)
+  * Standard Python libraries
+
+### For GUI binary
+
+* Windows 10 or 11
+* No Python installation required, if binary release is available.
+
+---
+
+## 📥 Downloading CredDedupe
+
+### 🟣 Windows GUI Binary (Recommended)
+
+Download from:
+
+**[https://github.com/taggedzi/creddedupe/releases](https://github.com/taggedzi/creddedupe/releases)**
+
+Files:
+
+* `creddedupe-gui-<version>-win64.zip`
+* Optional `.sha256.txt` checksum
+
+Extract and run — portable, no registry changes.
+
+---
+
+### 🟢 Install From Source
+
+```sh
+git clone https://github.com/taggedzi/creddedupe
 cd creddedupe
-```
-
-### 2. Create and activate a virtual environment
-
-On macOS / Linux:
-
-```bash
 python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
 source .venv/bin/activate
-```
-
-On Windows (PowerShell):
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-You should now see `(.venv)` in your shell prompt.
-
-### 3. Install the package
-
-```bash
-pip install --upgrade pip
-pip install .
-```
-
-This will install `creddedupe` and its dependencies (including PyQt6).
-
-## Usage
-
-You can use either the CLI or the Qt6 GUI.
-
-### CLI usage
-
-After installation, from anywhere:
-
-```bash
-creddedupe-cli path/to/input.csv -o path/to/cleaned.csv
-```
-
-If you are running from the project directory without installing, use:
-
-```bash
-python -m cred_dedupe.core path/to/input.csv -o path/to/cleaned.csv
-```
-
-Key options:
-
-- `-o / --output` – path for the output CSV  
-  (default: `<input>_deduped.csv` in the same directory).
-- `--allow-different-passwords` – allow merging entries even when passwords
-  differ (more aggressive; may merge accounts across password changes).
-- `--no-email-username-equivalence` – by default, the tool treats email and
-  username as interchangeable login identifiers; this flag disables that.
-
-### GUI usage
-
-After installation:
-
-```bash
-creddedupe
-```
-
-Or from the project directory without installing:
-
-```bash
-python -m cred_dedupe.gui
-```
-
-In the GUI you can:
-
-- Pick an input CSV (or drag & drop it onto the window).
-- Choose an output CSV path (suggested automatically as `<input>_deduped.csv`).
-- Decide whether to only merge entries that share the same password
-  (safer, enabled by default).
-- Decide whether email and username should be treated as equivalent
-  login identifiers.
-- Run the deduplication and see a short summary of what was done.
-
-## How the deduplication works
-
-This section is intentionally detailed so you can understand the logic and
-decide whether it fits your needs. When in doubt, inspect the output CSV
-manually before importing it anywhere.
-
-### Input and parsing
-
-- Expects all of the columns:  
-  `type,name,url,email,username,password,note,totp,createTime,modifyTime,vault`.
-- Internally, each row is converted into an `Entry` object that also stores:
-  - `canonical_domain`: derived from `url` using standard URL parsing, with
-    scheme added if missing, lower‑cased, and `www.` stripped.
-  - `login_id`: a normalized identifier built from `username` and optionally
-    `email`, lower‑cased.
-
-### Grouping potential duplicates
-
-Each `Entry` is assigned to a group using:
-
-- `domain_or_name`: the canonical domain from `url`; if there is no URL,
-  the normalized `name` is used instead.
-- `login_id`: based on `username` or (by default) `username`/`email`
-  equivalence.
-- `password`: included in the grouping key only when the “strict passwords”
-  option is enabled.
-
-So, by default, two rows are considered potential duplicates if:
-
-- They share the same canonical domain (or name when URL is missing).
-- They share the same login identifier (username/email).
-- They use the same password.
-
-If the “allow different passwords” option is enabled, the password is not part
-of the grouping key, which means entries can be merged across password changes.
-
-Rows that lack both a usable domain/name and a login ID are kept separate to
-avoid risky merges.
-
-### Choosing the “best” entry
-
-For each group of potential duplicates, the tool picks a preferred entry using:
-
-1. The newest `modifyTime` (tries numeric epoch timestamps or common
-   ISO‑style formats).
-2. The number of non‑empty important fields (`url`, `email`, `username`,
-   `password`, `note`, `totp`).
-
-This preferred entry provides the main fields in the merged result.
-
-### Merging data from duplicates
-
-For each group, the tool:
-
-- Collects all distinct values of:
-  - Names, URLs, emails, usernames, passwords, TOTP secrets, and vault names.
-- Keeps the preferred entry’s values as the primary ones.
-- Adds any alternative values into the `note` field under a separate section:
-
-  ```text
-  Merged from duplicates:
-  - Alternative names: ...
-  - Alternative URLs: ...
-  - Alternative emails: ...
-  - Alternative usernames: ...
-  - Alternative passwords: ...
-  - Alternative TOTP secrets: ...
-  - Original vaults: ...
-  ```
-
-- Also concatenates all distinct original notes (`note`) from the grouped
-  entries, separated by blank lines.
-
-This way, the output keeps a single row per merged set of duplicates while
-preserving as much information as possible in the `note` field.
-
-### Output format
-
-The output CSV contains only:
-
-```text
-name,url,email,username,password,note,totp,vault
-```
-
-This format is typically suitable for re‑import into a password managers 
-that accept CSV imports with these columns.
-
-## Safety tips
-
-- Always make a backup of your original credential export before running this
-  tool.
-- Prefer running in the default (strict password) mode first and review the
-  results.
-- If you change the settings (for example, allow different passwords), compare
-  the results to the strict mode output.
-- Consider testing with a small subset of your data to verify that the
-  behavior matches your expectations.
-
-## Building a Windows binary (local)
-
-You can build a standalone Windows executable using [PyInstaller](https://pyinstaller.org/).
-These steps are intended to be run **locally**; once built, you can manually
-attach the resulting `.exe` to a GitHub release.
-
-### Quick build using the dev extra
-
-1. Ensure you are in your project directory and your virtual environment is active:
-
-   ```powershell
-   cd path\to\creddedupe
-   .venv\Scripts\Activate.ps1
-   ```
-
-2. Install the project in editable mode with the `dev` extras (includes PyInstaller):
-
-   ```powershell
-   pip install -e .[dev]
-   ```
-
-3. Run the helper build command:
-
-   ```powershell
-   creddedupe-build-win
-   ```
-
-   This wraps PyInstaller with sensible defaults:
-   - GUI-only binary (`--windowed`).
-   - Name: `CredDedupe`.
-   - Entry script: `run_creddedupe_gui.py` (which imports `cred_dedupe.gui`).
-   - Icon: `src\cred_dedupe\assets\creddedupe.ico` (if present).
-
-4. After a successful build, the main executable will be in:
-
-   ```text
-   dist\CredDedupe\CredDedupe.exe
-   ```
-
-5. Test the executable locally by running `CredDedupe.exe`, and if you are
-   satisfied, you can zip the `dist\CredDedupe\` directory or just the `.exe`
-   and upload it as an asset to your GitHub release.
-
-### Manual PyInstaller command (optional)
-
-If you prefer to run PyInstaller yourself, you can still use:
-
-```powershell
-pyinstaller ^
-  --noconfirm ^
-  --clean ^
-  --windowed ^
-  --name CredDedupe ^
-  --icon src\cred_dedupe\assets\creddedupe.ico ^
-  run_creddedupe_gui.py
-```
-
-## Development with Nox
-
-This project includes a simple [Nox](https://nox.thea.codes/) configuration
-for common development tasks.
-
-Install the dev dependencies (includes Nox and PyInstaller):
-
-```powershell
 pip install -e .[dev]
 ```
 
-Then you can run:
+Run tools:
 
-- `nox -s tests` – placeholder for the future test suite.
-- `nox -s lint` – runs Ruff linting over the project.
-- `nox -s lint_fix` – runs Ruff with `--fix` to automatically apply safe fixes.
-- `nox -s build_win` – installs `.[dev]` into an isolated env and runs the
-  Windows binary build (`creddedupe-build-win`).
+```sh
+creddedupe-cli --help
+creddedupe-gui
+```
 
-You can extend `noxfile.py` over time to wire in your actual tests and
-linting tools as the project grows.
+---
+
+## 🖥️ CLI Usage Examples
+
+### Deduplicate a Proton Pass export
+
+```sh
+creddedupe-cli cred_export.csv
+```
+
+### Auto-merge near duplicates
+
+```sh
+creddedupe-cli cred.csv --auto-merge-near-duplicates
+```
+
+### Force provider format
+
+```sh
+creddedupe-cli cred.csv --provider lastpass
+```
+
+### Convert LastPass → Bitwarden
+
+```sh
+creddedupe-cli lp.csv -o bw.csv --provider lastpass
+```
+
+---
+
+## 🪟 GUI Overview
+
+1. Open CSV File
+2. Automatic Provider Detection (overridable)
+3. Review summary
+4. Resolve near-duplicate groups
+5. Export cleaned CSV
+
+Passwords and TOTP fields are always masked.
+
+---
+
+## 🔌 Creating a Provider Plugin
+
+Plugins live at:
+
+```
+src/cred_dedupe/plugins/
+```
+
+Implement:
+
+* Provider metadata
+* `import_row()` → convert CSV → VaultItem
+* `export_row()` → convert VaultItem → CSV
+* Register plugin
+* Provide test fixtures
+
+Document new formats in `Formats.md`.
+
+---
+
+## 🧪 Tests
+
+Includes:
+
+* Plugin import/export tests
+* Detection tests
+* Dedupe logic tests
+* CLI end-to-end tests
+* Basic GUI smoke tests
+
+Run:
+
+```sh
+pytest
+```
+
+---
+
+## 🧷 Versioning
+
+* Pre-release versions use PEP 440 (e.g., `0.1.0a2`)
+* Git tags follow: `v0.1.0a2`
+* GitHub releases marked *Experimental*
+
+---
+
+## 📄 License & Legal
+
+CredDedupe is licensed under the **MIT License**.
+Full text is in `LICENSE`.
+
+This software is provided **“AS IS”**, without warranty, and the author(s) assume **no liability** for:
+
+* Data loss
+* Incorrect merges
+* Export issues
+* Credential exposure
+* Any resulting damages
+
+See the full MIT license for details.
+
+For a full list of third-party licenses, credits, and AI-assist disclosures, see  
+➡️ **[docs/attributions.md](docs/ATTRIBUTIONS.md)**
+
+---
+
+## 🤖 Acknowledgments & Use of AI Tools
+
+Parts of this project — including documentation, testing scaffolds, and code generation — were developed with help from **ChatGPT** and other AI-assisted tools.
+All final architectural decisions and integrations were performed by the project author.
+All included dependencies retain their own licenses.
+
+Qt®, PyQt6®, Python®, PyInstaller®, and other referenced tools are trademarks of their respective owners and are not affiliated with this project.
+
+---
+
+## 🆘 Issues & Feedback
+
+Submit issues at:
+**[https://github.com/taggedzi/creddedupe/issues](https://github.com/taggedzi/creddedupe/issues)**

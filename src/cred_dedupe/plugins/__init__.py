@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """Plugin system for provider-specific CSV formats."""
 
 from __future__ import annotations
