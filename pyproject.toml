@@ -26,6 +26,7 @@ dev = [
 creddedupe = "cred_dedupe.gui:main"
 creddedupe-cli = "cred_dedupe.core:main"
 creddedupe-build-win = "cred_dedupe.build_win:main"
+creddedupe-gui = "cred_dedupe.gui_app:run_gui"
 
 [build-system]
 requires = ["setuptools>=61.0"]
