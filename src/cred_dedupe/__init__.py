@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 Credential CSV deduplication helpers.
 

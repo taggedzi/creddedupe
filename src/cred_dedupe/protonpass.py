@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 # Proton Pass CSV <-> VaultItem adapter layer.

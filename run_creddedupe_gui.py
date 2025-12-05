@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """
 Convenience launcher for the Qt6 GUI.
 Running this file is equivalent to:
