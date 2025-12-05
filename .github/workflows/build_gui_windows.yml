@@ -1,0 +1,36 @@
+name: Build GUI Windows (experimental)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-gui-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Build GUI
+        shell: pwsh
+        run: |
+          ./build/build_gui_windows.ps1 -Version "ci-snapshot"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: creddedupe-gui-windows
+          path: |
+            dist/creddedupe-gui-*-win64.zip
+            dist/creddedupe-gui-*-win64.zip.sha256.txt
+
