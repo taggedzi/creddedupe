@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from cred_dedupe.merge import MERGEABLE_FIELDS, merge_items
+from cred_dedupe.merge import merge_items
 from cred_dedupe.model import ItemType, VaultItem
 
 
