@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 from cred_dedupe.changelog import (
-    ChangeEntry,
     ChangeLog,
     log_discard_manual,
     log_manual_merge,

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Optional, Tuple
 
-import hashlib
 from collections import defaultdict
 
 from .model import VaultItem
@@ -12,6 +11,48 @@ def _mask_secret(value: str | None) -> str:
     if not value:
         return "(empty)"
     return f"******** (len={len(value)})"
+
+
+def _safe_display_password(pwd: Optional[str]) -> str:
+    """
+    Return a safe, redacted representation of a password for console display.
+
+    - Never returns the actual password.
+    - Only indicates length, or "(empty)".
+    """
+    if not pwd:
+        return "Password: (empty)"
+    return f"Password: ******** (len={len(pwd)})"
+
+
+def _safe_display_notes(notes: Optional[str], max_len: int = 60) -> str:
+    """
+    Return a safe preview of notes.
+
+    - Treat notes as potentially sensitive.
+    - Only show at most max_len characters.
+    - Indicate if text was truncated.
+    """
+    if not notes:
+        return "Notes: (empty)"
+
+    stripped = notes.strip()
+    if len(stripped) <= max_len:
+        return f"Notes: {stripped}"
+
+    preview = stripped[: max_len - 3] + "..."
+    return f"Notes: {preview} (truncated)"
+
+
+def _safe_display_totp(has_totp: bool) -> str:
+    """
+    Safe representation of TOTP presence.
+
+    - Do not print the TOTP URI or secret.
+    """
+    if has_totp:
+        return "TOTP: present"
+    return "TOTP: none"
 
 
 def _format_timestamp(epoch_ms: int | None) -> str:
@@ -54,41 +95,38 @@ def _item_key(item: VaultItem) -> str:
     return item.internal_id or f"obj-{id(item)}"
 
 
-def _compute_password_fingerprints(
-    group: List[VaultItem],
-) -> dict[str, dict]:
+def _compute_password_matches(group: List["VaultItem"]) -> dict[str, List[str]]:
     """
-    Compute short, non-reversible password fingerprints for display only.
+    For a group of VaultItem, compute which entries share the same password.
 
     Returns:
-        key -> {
-            "fingerprint": str,  # hex prefix or "(none)"
-            "matches": list[str],  # keys of items with same fingerprint (excluding self)
-        }
+        internal_id -> list of other internal_ids in the group that have
+                       the exact same password (excluding self).
+
+    Notes:
+        - Passwords are compared directly in memory.
+        - No passwords or derived values are stored, returned, or printed.
+        - This is purely for in-memory grouping so we can show
+          "same password as entries X,Y" vs "unique password in this group".
     """
-    id_to_fp: dict[str, str] = {}
+    pw_to_ids: dict[Optional[str], List[str]] = defaultdict(list)
+
     for item in group:
-        key = _item_key(item)
-        pwd = item.password or ""
-        if not pwd:
-            fp = "(none)"
-        else:
-            h = hashlib.sha256(pwd.encode("utf-8")).hexdigest()
-            fp = h[:8]
-        id_to_fp[key] = fp
+        pw = item.password or None
+        if item.internal_id is not None:
+            pw_to_ids[pw].append(item.internal_id)
 
-    fp_to_ids: dict[str, List[str]] = defaultdict(list)
-    for internal_id, fp in id_to_fp.items():
-        fp_to_ids[fp].append(internal_id)
+    matches_by_id: dict[str, List[str]] = {}
+    for item in group:
+        if item.internal_id is None:
+            continue
+        pw = item.password or None
+        ids = pw_to_ids.get(pw, [])
+        matches_by_id[item.internal_id] = [
+            i for i in ids if i != item.internal_id
+        ]
 
-    result: dict[str, dict] = {}
-    for internal_id, fp in id_to_fp.items():
-        peers = [i for i in fp_to_ids[fp] if i != internal_id]
-        result[internal_id] = {
-            "fingerprint": fp,
-            "matches": peers,
-        }
-    return result
+    return matches_by_id
 
 
 def _choose_best_item(group: List[VaultItem]) -> VaultItem:
@@ -213,66 +251,84 @@ def interactive_merge_near_duplicates(
 
         printed_index += 1
         best_item = _choose_best_item(items)
-        fp_info = _compute_password_fingerprints(items)
         diff_flags = _compute_diff_flags(items, best_item)
-        id_to_index = {_item_key(item): idx for idx, item in enumerate(items, start=1)}
+        pw_matches = _compute_password_matches(items)
+        id_to_index = {
+            item.internal_id: idx
+            for idx, item in enumerate(items, start=1)
+            if item.internal_id is not None
+        }
 
         first = items[0]
         site = first.primary_url or "(no URL)"
         username = first.username or "(no username)"
 
-        print(
-            f"\n--- Near-duplicate group {printed_index}/{total_groups} "
-            f"--------------------------------"
-        )
-        print(f"Site: {site}")
-        print(f"Username: {username}\n")
+        if not quiet:
+            print(
+                f"\n--- Near-duplicate group {printed_index}/{total_groups} "
+                f"--------------------------------"
+            )
+            print(f"Site: {site}")
+            print(f"Username: {username}\n")
 
         for idx, item in enumerate(items, start=1):
             is_best = item is best_item
             rec_label = " [RECOMMENDED]" if is_best else ""
-            key = _item_key(item)
-            fp_data = fp_info.get(key, {})
-            fp = fp_data.get("fingerprint", "(none)")
-            matches = fp_data.get("matches", [])
 
-            pwd_display = _mask_secret(item.password)
-            if fp == "(none)":
-                pwd_line = f"{pwd_display}  [no password set]"
-            else:
-                if matches:
-                    match_indices = sorted(
-                        id_to_index[m] for m in matches if m in id_to_index
-                    )
-                    match_str = ",".join(str(i) for i in match_indices)
-                    pwd_line = (
-                        f"{pwd_display}  [fingerprint: {fp}, matches: {match_str}]"
-                    )
+            if not quiet:
+                title_str = f"[{idx}] Title: {item.title or '(no title)'}{rec_label}"
+
+                password_str = _safe_display_password(item.password)
+                if item.password:
+                    same_ids = pw_matches.get(item.internal_id or "", [])
+                    if same_ids:
+                        same_indices = sorted(
+                            id_to_index[i] for i in same_ids if i in id_to_index
+                        )
+                        idx_list = ",".join(str(i) for i in same_indices)
+                        password_str = (
+                            f"{password_str}  "
+                            f"[same password as entries {idx_list}]"
+                        )
+                    else:
+                        password_str = (
+                            f"{password_str}  "
+                            "[unique password in this group]"
+                        )
+
+                notes_str = _safe_display_notes(item.notes)
+
+                created_ts = _format_timestamp(item.created_at)
+                updated_ts = _format_timestamp(item.updated_at)
+                created_line = f"First created: {created_ts}"
+                updated_line = f"Last changed:  {updated_ts}"
+
+                key = _item_key(item)
+                flags = diff_flags.get(key, [])
+                if flags and flags != ["no differences vs best"]:
+                    flags_str = ", ".join(flags)
                 else:
-                    pwd_line = f"{pwd_display}  [fingerprint: {fp}]"
+                    flags_str = "none"
+                flags_line = f"Differences vs others: {flags_str}"
 
-            notes = (item.notes or "").strip()
-            if notes:
-                preview = notes if len(notes) <= 60 else notes[:57] + "..."
-            else:
-                preview = "(empty)"
+                # The following print block only uses sanitized display strings
+                # (see _safe_display_password/_safe_display_notes/_safe_display_totp).
+                # No raw passwords, TOTP secrets, or full note contents are printed.
+                # codeql[clear-text-logging-of-sensitive-data]
+                print(
+                    f"{title_str}\n"
+                    f"    {password_str}\n"
+                    f"    {notes_str}\n"
+                    f"    {created_line}\n"
+                    f"    {updated_line}\n"
+                    f"    {flags_line}\n"
+                )
 
-            created_str = _format_timestamp(item.created_at)
-            updated_str = _format_timestamp(item.updated_at)
-
-            flags = diff_flags.get(key, [])
-            flags_str = ", ".join(flags) if flags else "(none)"
-
-            print(
-                f"[{idx}] Title: {item.title or '(no title)'}{rec_label}\n"
-                f"    Password: {pwd_line}\n"
-                f"    Notes: {preview}\n"
-                f"    First created: {created_str}\n"
-                f"    Last changed:  {updated_str}\n"
-                f"    Differences vs others: {flags_str}\n"
+        best_index = id_to_index.get(
+            best_item.internal_id, next(
+                idx for idx, item in enumerate(items, start=1) if item is best_item
             )
-
-        best_index = id_to_index[_item_key(best_item)]
+        )
 
         print(
             "What do you want to do with this group?\n\n"
